@@ -156,7 +156,7 @@ if [ "${use_master}" != "1" ]; then
     version_libcxx=release_35
     version_compilerrt=release_35
     version_libcxxabi=239a032       # No 3.5 branch. Hardcoding.
-    version_lldb=master             # No 3.5 branch. Probably won't work.
+    version_lldb=release_35
     version_lld=master              # No 3.5 branch. Probably won't work.
     version_extra=release_35
 
