@@ -1,6 +1,8 @@
 
 FROM        ubuntu:trusty
-MAINTAINER  Robin Sommer <robin@icir.org>
+
+# forked from: Robin Sommer <robin@icir.org>
+MAINTAINER  Zain Asgar <zasgar@trifacta.com>
 
 # Setup environment.
 ENV PATH /opt/llvm/bin:$PATH

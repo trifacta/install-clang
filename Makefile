@@ -1,5 +1,5 @@
 
-IMAGE="rsmmr/clang:3.5"
+IMAGE="trifacta/clang:3.5"
 
 all:
 
