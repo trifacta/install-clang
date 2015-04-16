@@ -1,9 +1,7 @@
 #! /usr/bin/env bash
+set -e
 
-if [ $# != 1 ]; then
-    echo "usage: $0 <install-prefix>"
-    exit 1
-fi
-
-$1/bin/clang++ --std=c++11 --stdlib=libc++ test.cc -o a.out && ./a.out
-#rm -f a.out
+clang++ --std=c++11 --stdlib=libc++ test.cc -o a.out && ./a.out
+rm -f a.out
+clang++ -static -pthread --std=c++11 --stdlib=libc++ test.cc -o a.out && ./a.out
+rm -f a.out
