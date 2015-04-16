@@ -13,7 +13,7 @@ RUN apt-get update && \
 
 
 RUN add-apt-repository -s -y 'deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.6 main' && \
-    wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|sudo apt-key add -
+    wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key|apt-key add -
 
 # Setup packages.
 RUN apt-get update && \
@@ -26,7 +26,7 @@ RUN apt-get update && \
 	    clang-modernize-3.6 clang-format-3.6 python-clang-3.6 \
 	    lldb-3.6-dev libc++-dev libc++abi-dev
 
-RUN sudo update-alternatives --install \
+RUN update-alternatives --install \
         /usr/bin/llvm-config       llvm-config      /usr/bin/llvm-config-3.6  200 \
 	--slave /usr/bin/llvm-ar           llvm-ar          /usr/bin/llvm-ar-3.6 \
 	--slave /usr/bin/llvm-as           llvm-as          /usr/bin/llvm-as-3.6 \
