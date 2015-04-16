@@ -67,6 +67,6 @@ RUN update-alternatives --install \
 ADD . /opt/install-clang
 
 # Test clang and then delete install files
-RUN cd /opt/install-clang && /opt/install-clang/testit
+RUN cd /opt/install-clang && /opt/install-clang/testit && cd && rm -rf /opt/install-clang
 
 
