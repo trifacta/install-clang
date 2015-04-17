@@ -12,6 +12,9 @@ RUN yum install -y python27
 # get some basic packages needed by the install
 RUN yum install -y emacs wget tar xz
 
+# some extra packages for lldb
+RUN yum install -y libedit-devel
+
 # Download llvm 3.6 release packages
 RUN wget http://llvm.org/releases/3.6.0/llvm-3.6.0.src.tar.xz
 RUN wget http://llvm.org/releases/3.6.0/cfe-3.6.0.src.tar.xz
@@ -20,7 +23,7 @@ RUN wget http://llvm.org/releases/3.6.0/libcxx-3.6.0.src.tar.xz
 RUN wget http://llvm.org/releases/3.6.0/libcxxabi-3.6.0.src.tar.xz
 RUN wget http://llvm.org/releases/3.6.0/clang-tools-extra-3.6.0.src.tar.xz
 RUN wget http://llvm.org/releases/3.6.0/lld-3.6.0.src.tar.xz
-
+RUN wget http://llvm.org/releases/3.6.0/lldb-3.6.0.src.tar.xz
 
 ### Copy and untar all the packages
 WORKDIR /opt/llvm-src
@@ -51,8 +54,22 @@ WORKDIR /opt/llvm-src/llvm/tools
 RUN tar xf /opt/downloads/lld-3.6.0.src.tar.xz
 RUN mv lld-3.6.0.src lld
 
+## LLDB Does not work yet
+#WORKDIR /opt/llvm-src/llvm/tools
+#RUN tar xf /opt/downloads/lldb-3.6.0.src.tar.xz
+#RUN mv lldb-3.6.0.src lldb
+
 WORKDIR /opt/llvm-build
-RUN scl enable python27 "cmake -DLLVM_ENABLE_LIBCXX=on -DCMAKE_INSTALL_PREFIX=$LLVM_INSTALL_PREFIX -Wno-dev --enable-optimized --enable-cxx11 --with-libcxxabi -DCMAKE_BUILD_TYPE=Release -DLLVM_REQUIRES_RTTI=1 /opt/llvm-src/llvm/"
+RUN scl enable python27 "cmake \
+    -DPYTHON_LIBRARY=/opt/rh/python27/root/usr/lib64/libpython2.7.so \
+    -DPYTHON_INCLUDE_DIR=/opt/rh/python27/root/usr/include/python2.7/ \
+    -DLLVM_ENABLE_LIBCXX=on \
+    -DCMAKE_INSTALL_PREFIX=$LLVM_INSTALL_PREFIX \
+    -Wno-dev --enable-optimized \
+    --enable-cxx11 \
+    --with-libcxxabi \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DLLVM_REQUIRES_RTTI=1 /opt/llvm-src/llvm/"
 
 # Build just CXX first
 RUN scl enable python27 "make -j$PARALLEL cxx"
