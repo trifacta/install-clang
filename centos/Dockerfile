@@ -18,6 +18,8 @@ RUN wget http://llvm.org/releases/3.6.0/compiler-rt-3.6.0.src.tar.xz
 RUN wget http://llvm.org/releases/3.6.0/libcxx-3.6.0.src.tar.xz
 RUN wget http://llvm.org/releases/3.6.0/libcxxabi-3.6.0.src.tar.xz
 RUN wget http://llvm.org/releases/3.6.0/clang-tools-extra-3.6.0.src.tar.xz
+RUN wget http://llvm.org/releases/3.6.0/lld-3.6.0.src.tar.xz
+
 
 ### Copy and untar all the packages
 WORKDIR /opt/llvm-src
@@ -43,6 +45,10 @@ RUN mv libcxx-3.6.0.src/ libcxx
 WORKDIR /opt/llvm-src/llvm/projects
 RUN tar xf /opt/downloads/libcxxabi-3.6.0.src.tar.xz
 RUN mv libcxxabi-3.6.0.src/ libcxxabi
+
+WORKDIR /opt/llvm-src/llvm/tools
+RUN tar xf /opt/downloads/lld-3.6.0.src.tar.xz
+RUN mv lld-3.6.0.src lld
 
 WORKDIR /opt/llvm-build
 RUN scl enable python27 "cmake -DLLVM_ENABLE_LIBCXX=on -DCMAKE_INSTALL_PREFIX=/opt/llvm36 -Wno-dev --enable-optimized --enable-cxx11 --with-libcxxabi -DCMAKE_BUILD_TYPE=Release -DLLVM_REQUIRES_RTTI=1 /opt/llvm-src/llvm/"
