@@ -1,4 +1,5 @@
-FROM trifacta/centos-python:2.7
+FROM centos:6
+MAINTAINER Trifacta, Inc.
 
 RUN yum -y install epel-release
 RUN yum -y groupinstall "Development Tools"
