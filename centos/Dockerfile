@@ -2,6 +2,7 @@ FROM trifacta/photon-clang:3.4-centos6
 MAINTAINER Trifacta, Inc.
 
 ENV PARALLEL=10
+ENV LLVM_INSTALL_PREFIX=/opt/llvm36
 
 WORKDIR /opt/downloads
 
@@ -51,7 +52,7 @@ RUN tar xf /opt/downloads/lld-3.6.0.src.tar.xz
 RUN mv lld-3.6.0.src lld
 
 WORKDIR /opt/llvm-build
-RUN scl enable python27 "cmake -DLLVM_ENABLE_LIBCXX=on -DCMAKE_INSTALL_PREFIX=/opt/llvm36 -Wno-dev --enable-optimized --enable-cxx11 --with-libcxxabi -DCMAKE_BUILD_TYPE=Release -DLLVM_REQUIRES_RTTI=1 /opt/llvm-src/llvm/"
+RUN scl enable python27 "cmake -DLLVM_ENABLE_LIBCXX=on -DCMAKE_INSTALL_PREFIX=$LLVM_INSTALL_PREFIX -Wno-dev --enable-optimized --enable-cxx11 --with-libcxxabi -DCMAKE_BUILD_TYPE=Release -DLLVM_REQUIRES_RTTI=1 /opt/llvm-src/llvm/"
 
 # Build just CXX first
 RUN scl enable python27 "make -j$PARALLEL cxx"
@@ -59,7 +60,7 @@ RUN scl enable python27 "make -j$PARALLEL cxx"
 # Build the rest of LLVM/Clang
 RUN scl enable python27 "make -j$PARALLEL"
 
-# install to /opt/llvm36
+# install to LLVM_INSTALL_PREFIX
 RUN scl enable python27 "make install"
 
 RUN rm -rf /opt/llvm-build
@@ -80,10 +81,9 @@ WORKDIR /opt/libcxx-work/build-libcxx-1
 
 RUN scl enable python27 "cmake \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/usr \
-    -DCMAKE_C_COMPILER=/opt/llvm36/bin/clang \
-    -DCMAKE_CXX_COMPILER=/opt/llvm36/bin/clang++ \
-    -DLIBCXX_LIBDIR_SUFFIX=64 \
+    -DCMAKE_INSTALL_PREFIX=$LLVM_INSTALL_PREFIX \
+    -DCMAKE_C_COMPILER=$LLVM_INSTALL_PREFIX/bin/clang \
+    -DCMAKE_CXX_COMPILER=$LLVM_INSTALL_PREFIX/bin/clang++ \
     /opt/libcxx-work/libcxx"
 
 RUN scl enable python27 "make -j$PARALLEL"
@@ -94,35 +94,38 @@ RUN scl enable python27 "make install"
 # with the build. So remove them for now. (TODO understand why)
 RUN rm -f /usr/lib/libc++.so*
 
-ENV PATH /opt/llvm36/bin:$PATH
+ENV PATH $LLVM_INSTALL_PREFIX/bin:$PATH
 
-# build libcxxabi using libc++ that we installed
+# build libcxxabi(static) using libc++ that we installed and
+# install it in $LLVM_INSTALL_PREFIX
+# the dynamic version is already built and installed by earlier steps
 WORKDIR /opt/libcxx-work/build-libcxxabi
 
-RUN echo $PATH && scl enable python27 "LDFLAGS=\"-lc++abi\" cmake \
+RUN echo $PATH && scl enable python27 "cmake \
     -DLLVM_ENABLE_LIBCXX=On \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/usr \
-    -DCMAKE_C_COMPILER=/opt/llvm36/bin/clang \
-    -DCMAKE_CXX_COMPILER=/opt/llvm36/bin/clang++ \
+    -DCMAKE_INSTALL_PREFIX=$LLVM_INSTALL_PREFIX \
+    -DCMAKE_C_COMPILER=$LLVM_INSTALL_PREFIX/bin/clang \
+    -DCMAKE_CXX_COMPILER=$LLVM_INSTALL_PREFIX/bin/clang++ \
     -DLIBCXXABI_LIBCXX_INCLUDES=../libcxx/include \
     -DLIBCXXABI_ENABLE_SHARED=Off \
-    -DLIBCXXABI_LIBDIR_SUFFIX=64 \
     /opt/libcxx-work/libcxxabi"
 
 RUN scl enable python27 "make -j$PARALLEL"
 RUN scl enable python27 "make install"
 
+
+# we now compile a libc++(static) using the new libc++abi
+# and install it in $LLVM_INSTALL_PREFIX
 WORKDIR /opt/libcxx-work/build-libcxx-2
 
 RUN scl enable python27 "cmake \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/usr \
-    -DCMAKE_C_COMPILER=/opt/llvm36/bin/clang \
-    -DCMAKE_CXX_COMPILER=/opt/llvm36/bin/clang++ \
+    -DCMAKE_INSTALL_PREFIX=$LLVM_INSTALL_PREFIX \
+    -DCMAKE_C_COMPILER=$LLVM_INSTALL_PREFIX/bin/clang \
+    -DCMAKE_CXX_COMPILER=$LLVM_INSTALL_PREFIX/bin/clang++ \
     -DLIBCXX_ENABLE_SHARED=Off \
-    -DLIBCXX_LIBDIR_SUFFIX=64 \
-    -DLIBCXX_CXX_ABI_LIBRARY_PATH=/opt/libcxx-work/build-libcxx-2/lib64 \
+    -DLIBCXX_CXX_ABI_LIBRARY_PATH=/opt/libcxx-work/build-libcxx-2/lib \
     -DLIBCXX_CXX_ABI=libcxxabi\
     -DLIBCXX_LIBCXXABI_INCLUDE_PATHS=/opt/libcxx-work/libcxxabi/include \
     /opt/libcxx-work/libcxx"
@@ -130,15 +133,15 @@ RUN scl enable python27 "cmake \
 RUN scl enable python27 "make -j$PARALLEL"
 RUN scl enable python27 "make install"
 
+# we now compile a libc++(dynamic) using the new libc++abi
+# and install it in $LLVM_INSTALL_PREFIX
 WORKDIR /opt/libcxx-work/build-libcxx-3
-# Dynamic version of the above
 RUN scl enable python27 "cmake \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/usr \
-    -DCMAKE_C_COMPILER=/opt/llvm36/bin/clang \
-    -DCMAKE_CXX_COMPILER=/opt/llvm36/bin/clang++ \
+    -DCMAKE_INSTALL_PREFIX=$LLVM_INSTALL_PREFIX \
+    -DCMAKE_C_COMPILER=$LLVM_INSTALL_PREFIX/bin/clang \
+    -DCMAKE_CXX_COMPILER=$LLVM_INSTALL_PREFIX/bin/clang++ \
     -DLIBCXX_ENABLE_SHARED=on \
-    -DLIBCXX_LIBDIR_SUFFIX=64 \
     -DLIBCXX_CXX_ABI_LIBRARY_PATH=/opt/libcxx-work/build-libcxx-2/lib64 \
     -DLIBCXX_CXX_ABI=libcxxabi\
     -DLIBCXX_LIBCXXABI_INCLUDE_PATHS=/opt/libcxx-work/libcxxabi/include \
@@ -149,3 +152,11 @@ RUN scl enable python27 "make install"
 
 RUN rm -rf /opt/downloads
 RUN rm -rf /opt/libcxx-work/ubuntu
+
+
+# delete old versions of llvm
+RUN yum remove -y llvm
+
+# delete old version of libc++ and libcxxabi
+RUN rm -f /usr/lib64/libc++.*
+RUN rm -f /usr/lib64/libc++abi.*
