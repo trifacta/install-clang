@@ -1,4 +1,4 @@
-FROM trifacta/centos-clang:3.4
+FROM trifacta/photon-clang:3.4
 MAINTAINER Trifacta, Inc.
 
 ENV PARALLEL=10
