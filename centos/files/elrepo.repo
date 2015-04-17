@@ -1,0 +1,29 @@
+[elrepo]
+priority=10
+name=ELRepo.org Community Enterprise Linux Repository - el6
+baseurl=http://elrepo.org/linux/elrepo/el6/$basearch/
+mirrorlist=http://elrepo.org/mirrors-elrepo.el6
+protect=0
+
+[elrepo-testing]
+enabled=0
+priority=10
+name=ELRepo.org Community Enterprise Linux Testing Repository - el6
+baseurl=http://elrepo.org/linux/testing/el6/$basearch/
+mirrorlist=http://elrepo.org/mirrors-elrepo-testing.el6
+protect=0
+
+[elrepo-kernel]
+enabled=0
+priority=10
+name=ELRepo.org Community Enterprise Linux Kernel Repository - el6
+baseurl=http://elrepo.org/linux/kernel/el6/$basearch/
+mirrorlist=http://elrepo.org/mirrors-elrepo-kernel.el6
+protect=0
+
+[elrepo-extras]
+priority=10
+name=ELRepo.org Community Enterprise Linux Extras Repository - el6
+baseurl=http://elrepo.org/linux/extras/el6/$basearch/
+mirrorlist=http://elrepo.org/mirrors-elrepo-extras.el6
+protect=0
