@@ -1,5 +1,6 @@
 
 IMAGE="trifacta/clang:3.6"
+DEBIMAGE=${IMAGE}-deb
 
 all:
 
@@ -8,6 +9,10 @@ all:
 
 docker-build:
 	docker build -t ${IMAGE} .
+
+docker-build-deb:
+	docker build -t ${DEBIMAGE} deb
+	docker run --rm -v ${PWD}:/target ${DEBIMAGE}
 
 docker-run:
 	docker run -i -t ${IMAGE}
